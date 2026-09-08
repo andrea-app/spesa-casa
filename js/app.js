@@ -13,6 +13,7 @@ import {
   markPurchasedWithDetails,
   clearPurchasedItems,
   listenPurchaseHistory,
+  deleteHistoryEntry,
 } from "./data.js";
 
 // ---------------------------------------------------------------------------
@@ -502,12 +503,33 @@ function renderHistory() {
     name.textContent = h.productName;
     top.appendChild(name);
 
+    const right = document.createElement("div");
+    right.className = "history-item-right";
+
     const d = toDate(h.purchasedAt);
     const dateEl = document.createElement("span");
     dateEl.className = "history-item-date";
     dateEl.textContent = d ? dateFmt.format(d) : "";
-    top.appendChild(dateEl);
+    right.appendChild(dateEl);
 
+    const delBtn = document.createElement("button");
+    delBtn.className = "history-item-remove";
+    delBtn.type = "button";
+    delBtn.title = "Elimina dallo storico";
+    delBtn.textContent = "✕";
+    delBtn.addEventListener("click", async () => {
+      if (!confirm(`Eliminare "${h.productName}" dallo storico?`)) return;
+      try {
+        await deleteHistoryEntry(h.id);
+        toast("Voce eliminata dallo storico");
+      } catch (err) {
+        console.error(err);
+        toast("Errore nell'eliminazione");
+      }
+    });
+    right.appendChild(delBtn);
+
+    top.appendChild(right);
     el.appendChild(top);
 
     const detail = formatPurchaseInfoInline({ brand: h.brand, size: h.size, price: h.price });
