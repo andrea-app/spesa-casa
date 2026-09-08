@@ -164,6 +164,7 @@ onAuthStateChanged(auth, async (user) => {
     listenProducts((data) => {
       products = data;
       renderProductSuggestions();
+      renderShoppingList();
     })
   );
   unsubscribers.push(
@@ -357,6 +358,16 @@ function renderItemCard(item) {
     detailEl.className = "item-detail";
     detailEl.textContent = detailText;
     main.appendChild(detailEl);
+  } else if (!item.purchased) {
+    // Non ancora comprato in questa lista: mostra l'ultimo acquisto registrato in passato, se esiste.
+    const product = products.find((p) => p.id === item.productNameLower);
+    const lastText = product ? formatLastPurchase(product.lastPurchase) : null;
+    if (lastText) {
+      const lastEl = document.createElement("div");
+      lastEl.className = "item-last-purchase";
+      lastEl.textContent = lastText;
+      main.appendChild(lastEl);
+    }
   }
 
   const removeBtn = document.createElement("button");
