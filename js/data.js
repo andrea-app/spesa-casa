@@ -194,3 +194,7 @@ export function listenPurchaseHistory(callback, max = 200) {
     callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
   });
 }
+
+export async function deleteHistoryEntry(purchaseId) {
+  await deleteDoc(doc(db, "purchaseHistory", purchaseId));
+}
