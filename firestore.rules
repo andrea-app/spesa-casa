@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// ============================================================================
+// REGOLE DI SICUREZZA — Spesa di Casa
+// ============================================================================
+// Solo gli indirizzi email elencati in ALLOWED_EMAILS possono leggere/scrivere
+// i dati. Sostituisci l'elenco con le email Google dei membri della famiglia
+// (le stesse che useranno per il pulsante "Accedi con Google").
+//
+// Per pubblicare queste regole:
+//  1. Firebase Console → Firestore Database → Regole → incolla questo file → Pubblica
+//  oppure, con la Firebase CLI installata:
+//  2. firebase deploy --only firestore:rules
+// ============================================================================
+
+function isAllowed() {
+  return request.auth != null &&
+    request.auth.token.email in [
+      "andrea_pisaneschi@hotmail.com",
+      "laura.barletta75@gmail.com"
+      // aggiungi qui altre email della famiglia, una per riga, tra virgolette
+    ];
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /categories/{categoryId} {
+      allow read, write: if isAllowed();
+    }
+
+    match /products/{productId} {
+      allow read, write: if isAllowed();
+    }
+
+    match /shoppingList/{itemId} {
+      allow read, write: if isAllowed();
+    }
+
+    match /purchaseHistory/{purchaseId} {
+      // Lo storico non si modifica né si cancella dall'app: solo lettura e creazione.
+      allow read, create: if isAllowed();
+      allow update, delete: if false;
+    }
+
+    // Blocca tutto il resto per sicurezza.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
