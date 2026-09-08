@@ -196,5 +196,52 @@ export function listenPurchaseHistory(callback, max = 200) {
 }
 
 export async function deleteHistoryEntry(purchaseId) {
-  await deleteDoc(doc(db, "purchaseHistory", purchaseId));
+  const historyRef = doc(db, "purchaseHistory", purchaseId);
+  const snap = await getDoc(historyRef);
+  const deletedData = snap.exists() ? snap.data() : null;
+
+  await deleteDoc(historyRef);
+
+  if (!deletedData || !deletedData.productNameLower) return;
+
+  // Dopo la cancellazione, ricalcola "l'ultimo acquisto" del prodotto in base
+  // a ciò che resta nello storico, così l'evidenza in lista/modale resta corretta.
+  const remainingSnap = await getDocs(
+    query(collection(db, "purchaseHistory"), where("productNameLower", "==", deletedData.productNameLower))
+  );
+
+  const productRef = doc(db, "products", deletedData.productNameLower);
+
+  if (remainingSnap.empty) {
+    await setDoc(productRef, { lastPurchase: null }, { merge: true });
+    return;
+  }
+
+  let latest = null;
+  let latestMillis = -1;
+  remainingSnap.forEach((d) => {
+    const item = d.data();
+    const millis =
+      item.purchasedAt && typeof item.purchasedAt.toMillis === "function" ? item.purchasedAt.toMillis() : 0;
+    if (millis >= latestMillis) {
+      latest = item;
+      latestMillis = millis;
+    }
+  });
+
+  await setDoc(
+    productRef,
+    {
+      lastPurchase: {
+        brand: latest.brand || null,
+        size: latest.size || null,
+        price: latest.price != null ? latest.price : null,
+        purchasedAt:
+          latest.purchasedAt && typeof latest.purchasedAt.toDate === "function"
+            ? latest.purchasedAt.toDate().toISOString()
+            : new Date().toISOString(),
+      },
+    },
+    { merge: true }
+  );
 }
