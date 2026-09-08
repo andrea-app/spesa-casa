@@ -33,6 +33,7 @@ h1 { font-size: 1.25rem; margin: 0; }
   justify-content: center;
   padding: 24px;
 }
+#login-screen[hidden] { display: none; }
 .login-card {
   background: var(--card);
   border-radius: var(--radius);
@@ -246,6 +247,7 @@ input:focus, select:focus { outline: 2px solid var(--green); outline-offset: -1p
   justify-content: center;
   z-index: 100;
 }
+.modal-overlay[hidden] { display: none; }
 .modal {
   background: var(--card);
   border-radius: 16px 16px 0 0;
