@@ -202,6 +202,7 @@ input:focus, select:focus { outline: 2px solid var(--green); outline-offset: -1p
 .item-name { font-weight: 600; font-size: 0.95rem; }
 .item-card.purchased .item-name { text-decoration: line-through; color: var(--muted); }
 .item-detail { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+.item-last-purchase { font-size: 0.78rem; color: var(--green-dark); margin-top: 2px; }
 .item-remove {
   background: none;
   border: none;
